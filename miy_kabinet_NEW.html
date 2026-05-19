@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌸 Кабінет тренера</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,400&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:#FDF4F8;color:#2C2C2A;min-height:100vh}
+.app{max-width:800px;margin:0 auto;background:#fff;min-height:100vh;border-left:0.5px solid #F4C0D1;border-right:0.5px solid #F4C0D1}
+.header{background:#FDF4F8;border-bottom:1px solid #F4C0D1;padding:1.5rem 1.5rem 1.25rem;text-align:center}
+.header h1{font-family:'Playfair Display',serif;font-size:24px;color:#993556;font-weight:600}
+.header p{font-size:12px;color:#D4537E;margin-top:4px;font-style:italic}
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid #F4C0D1}
+.stat-box{padding:14px 8px;text-align:center;border-right:0.5px solid #F4C0D1;background:#FDF4F8}
+.stat-box:last-child{border-right:none}
+.stat-box-lbl{font-size:10px;color:#D4537E;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px}
+.stat-box-val{font-size:20px;font-weight:600;color:#993556}
+.stat-box-sub{font-size:10px;color:#ED93B1;margin-top:2px}
+/* MOTIVATION EDITOR */
+.motivation-editor{background:linear-gradient(135deg,#993556,#D4537E);padding:14px 16px;display:flex;align-items:center;gap:10px}
+.motivation-editor input{flex:1;background:rgba(255,255,255,0.2);border:0.5px solid rgba(255,255,255,0.4);border-radius:8px;padding:8px 12px;color:#fff;font-family:'Nunito',sans-serif;font-size:13px}
+.motivation-editor input::placeholder{color:rgba(255,255,255,0.6)}
+.motivation-editor input:focus{outline:none;background:rgba(255,255,255,0.3)}
+.motivation-save-btn{background:rgba(255,255,255,0.25);border:0.5px solid rgba(255,255,255,0.5);border-radius:8px;padding:8px 14px;color:#fff;font-family:'Nunito',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.motivation-save-btn:hover{background:rgba(255,255,255,0.35)}
+/* VIEWS */
+.view{display:none;padding:1.5rem}.view.on{display:block}
+.search-wrap{display:flex;gap:10px;margin-bottom:1.25rem;align-items:center}
+.search-bar{position:relative;flex:1}
+.search-bar input{width:100%;height:42px;border-radius:10px;border:0.5px solid #F4C0D1;background:#FDF4F8;font-family:'Nunito',sans-serif;font-size:14px;padding:0 40px 0 14px;color:#2C2C2A}
+.search-bar input:focus{outline:none;border-color:#D4537E;background:#fff}
+.search-bar i{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#D4537E;font-size:18px}
+.refresh-btn{background:#FBEAF0;border:0.5px solid #F4C0D1;border-radius:8px;padding:0 14px;height:42px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:600;color:#D4537E;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.refresh-btn:hover{background:#f4dbe7}
+/* CLIENT GRID */
+.client-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.client-card{background:#fff;border:0.5px solid #F4C0D1;border-radius:12px;padding:1rem 1.125rem;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.client-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#D4537E,#ED93B1)}
+.client-card.overdue::before{background:linear-gradient(90deg,#A32D2D,#E05050)}
+.client-card.overdue{border-color:#F4C0C0}
+.client-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(212,83,126,0.15)}
+.client-name{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:#993556;margin-bottom:5px}
+.client-meta{font-size:11px;color:#D4537E;display:flex;align-items:center;gap:5px;margin-bottom:8px;flex-wrap:wrap}
+.badge-weeks{display:inline-flex;align-items:center;gap:4px;background:#FBEAF0;border:0.5px solid #F4C0D1;border-radius:20px;padding:2px 8px;font-size:10px;color:#72243E;font-weight:600}
+.badge-overdue{background:#FCEBEB;border-color:#F4C0C0;color:#A32D2D}
+.client-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.stat-mini{background:#FDF4F8;border-radius:7px;padding:6px 8px;text-align:center}
+.stat-mini-lbl{font-size:9px;color:#D4537E;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.stat-mini-val{font-size:13px;font-weight:600;color:#993556}
+.stat-mini-diff{font-size:10px;font-weight:600}
+.diff-good{color:#3B6D11}.diff-bad{color:#A32D2D}.diff-zero{color:#888}
+.card-del-btn{background:none;border:none;font-size:11px;color:#A32D2D;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:600;padding:4px 8px;border-radius:6px;width:100%;text-align:right}
+.card-del-btn:hover{background:#FCEBEB}
+/* DETAIL */
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:0.5px solid #F4C0D1;border-radius:8px;padding:8px 14px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;color:#D4537E;cursor:pointer;margin-bottom:1.25rem}
+.back-btn:hover{background:#FBEAF0}
+.detail-header{background:#FDF4F8;border:0.5px solid #F4C0D1;border-radius:12px;padding:1.125rem 1.25rem;margin-bottom:1.125rem}
+.detail-name{font-family:'Playfair Display',serif;font-size:22px;color:#993556;font-weight:600;margin-bottom:4px}
+.detail-sub{font-size:12px;color:#D4537E}
+.detail-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.card{background:#fff;border:0.5px solid #F4C0D1;border-radius:12px;padding:1.125rem 1.25rem;margin-bottom:1.125rem}
+.card-head{font-size:12px;font-weight:600;color:#D4537E;text-transform:uppercase;letter-spacing:.6px;margin-bottom:.875rem;display:flex;align-items:center;gap:6px}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:1rem}
+.sum-card{background:#FDF4F8;border:0.5px solid #F4C0D1;border-radius:10px;padding:10px 8px;text-align:center}
+.sum-lbl{font-size:10px;color:#D4537E;font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px}
+.sum-val{font-size:18px;font-weight:500}
+.sum-good{color:#3B6D11}.sum-bad{color:#A32D2D}.sum-zero{color:#888}
+.chart-wrap{background:#FBEAF0;border-radius:10px;padding:1.125rem;margin-bottom:1rem}
+.week-row{background:#fff;border:0.5px solid #F4C0D1;border-radius:10px;padding:.875rem 1rem;margin-bottom:.75rem}
+.week-row-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.625rem;flex-wrap:wrap;gap:6px}
+.week-num{font-size:12px;font-weight:600;color:#993556;background:#FBEAF0;padding:3px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px}
+.week-date{font-size:11px;color:#D4537E}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:6px}
+.metric-cell{text-align:center;background:#FDF4F8;border-radius:7px;padding:7px 4px}
+.metric-name{font-size:10px;color:#D4537E;font-weight:600;margin-bottom:2px}
+.metric-val{font-size:13px;font-weight:500;color:#2C2C2A}
+.metric-diff{font-size:10px;font-weight:600;margin-top:1px}
+.trainer-comment-box{background:#FBEAF0;border:0.5px solid #F4C0D1;border-left:3px solid #D4537E;border-radius:0 8px 8px 0;padding:10px 12px;margin-top:8px}
+.trainer-comment-lbl{font-size:10px;font-weight:700;color:#D4537E;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+.trainer-comment-val{font-size:13px;color:#72243E;line-height:1.5}
+.goal-block{background:#FBEAF0;border:0.5px solid #F4C0D1;border-radius:10px;padding:.875rem 1rem;margin-bottom:.75rem}
+.goal-label{font-size:12px;color:#72243E;font-weight:500;margin-bottom:4px}
+.goal-bar-wrap{height:5px;background:#F4C0D1;border-radius:3px;margin:4px 0 6px}
+.goal-bar{height:5px;background:#D4537E;border-radius:3px;transition:width .4s}
+.goal-vals{display:flex;align-items:center;gap:8px;font-size:12px;flex-wrap:wrap}
+.goal-from{color:#D4537E}.goal-to{color:#993556;font-weight:700}
+.goal-tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#fff;color:#D4537E}
+.health-text{font-size:13px;color:#72243E;line-height:1.6;background:#fff;border-radius:8px;padding:.75rem 1rem;border-left:3px solid #D4537E}
+.sec-title{font-family:'Playfair Display',serif;font-size:16px;color:#72243E;font-weight:500;margin-bottom:.875rem}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:600;color:#D4537E;text-transform:uppercase;letter-spacing:.4px}
+.field input{height:38px;border-radius:8px;border:0.5px solid #F4C0D1;background:#FDF4F8;color:#2C2C2A;font-family:'Nunito',sans-serif;font-size:14px;padding:0 10px;width:100%}
+.field input:focus{outline:none;border-color:#D4537E;background:#fff}
+.field textarea{width:100%;min-height:70px;border:0.5px solid #F4C0D1;border-radius:8px;background:#FDF4F8;color:#2C2C2A;font-family:'Nunito',sans-serif;font-size:14px;padding:9px 10px;resize:vertical}
+.btn-save{background:#D4537E;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-save:hover{background:#c04070}
+.btn-action{background:none;border:0.5px solid #F4C0D1;border-radius:8px;padding:8px 14px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:600;color:#D4537E;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-action:hover{background:#FBEAF0}
+.btn-danger{color:#A32D2D;border-color:#F4C0C0}
+.btn-danger:hover{background:#FCEBEB}
+.btn-edit{background:none;border:0.5px solid #F4C0D1;border-radius:6px;padding:4px 10px;font-size:11px;color:#D4537E;cursor:pointer;font-family:'Nunito',sans-serif;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.btn-edit:hover{background:#FBEAF0}
+.empty{text-align:center;padding:2rem;font-size:13px;color:#D4537E;font-style:italic}
+.loading{text-align:center;padding:2rem;font-size:13px;color:#D4537E}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#993556;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.on{display:flex}
+.modal-box{background:#fff;border-radius:16px 16px 0 0;padding:1.5rem;width:100%;max-width:720px;max-height:85vh;overflow-y:auto}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.modal-title{font-family:'Playfair Display',serif;font-size:18px;color:#993556;font-weight:600}
+.modal-close{background:none;border:none;font-size:22px;color:#D4537E;cursor:pointer;padding:4px}
+/* PRINT */
+@media print{.no-print{display:none!important}.app{border:none;max-width:100%}.print-header{display:block!important}}
+.print-header{display:none;text-align:center;margin-bottom:1.5rem;border-bottom:2px solid #F4C0D1;padding-bottom:1rem}
+@media(max-width:480px){.client-grid{grid-template-columns:1fr}.stats-bar{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header no-print">
+  <h1>🌸 Кабінет тренера 🌸</h1>
+  <p>Дарія Марчук · всі підопічні</p>
+</div>
+
+<!-- MOTIVATION EDITOR -->
+<div class="motivation-editor no-print">
+  <i class="ti ti-sparkles" style="color:#fff;font-size:18px;flex-shrink:0"></i>
+  <input type="text" id="motivation-inp" placeholder="Мотиваційне повідомлення для підопічних...">
+  <button class="motivation-save-btn" onclick="saveMotivation()"><i class="ti ti-check"></i> Зберегти</button>
+</div>
+
+<!-- LIST VIEW -->
+<div class="view on" id="view-list">
+  <div class="search-wrap">
+    <div class="search-bar">
+      <input type="text" id="search-inp" placeholder="Пошук за іменем та прізвищем..." oninput="filterClients()">
+      <i class="ti ti-search"></i>
+    </div>
+    <button class="refresh-btn no-print" onclick="loadClients()"><i class="ti ti-refresh"></i> Оновити</button>
+  </div>
+  <div id="clients-container"><div class="loading">Завантаження підопічних... 🌸</div></div>
+</div>
+
+<!-- DETAIL VIEW -->
+<div class="view" id="view-detail">
+  <div class="no-print" style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap">
+    <button class="back-btn" onclick="showList()"><i class="ti ti-arrow-left"></i> Всі підопічні</button>
+  </div>
+  <div id="detail-content"></div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <span class="modal-title">✏️ Редагувати замір</span>
+      <button class="modal-close" onclick="closeEdit()"><i class="ti ti-x"></i></button>
+    </div>
+    <input type="hidden" id="edit-client">
+    <input type="hidden" id="edit-week">
+    <div class="form-grid">
+      <div class="field"><label>Вага (кг)</label><input type="number" id="edit-weight" step="0.1"></div>
+      <div class="field"><label>Груди (см)</label><input type="number" id="edit-chest" step="0.5"></div>
+      <div class="field"><label>Талія (см)</label><input type="number" id="edit-waist" step="0.5"></div>
+      <div class="field"><label>Живіт (см)</label><input type="number" id="edit-belly" step="0.5"></div>
+      <div class="field"><label>Бедра (см)</label><input type="number" id="edit-hips" step="0.5"></div>
+      <div class="field"><label>Права нога (см)</label><input type="number" id="edit-rleg" step="0.5"></div>
+      <div class="field"><label>Ліва нога (см)</label><input type="number" id="edit-lleg" step="0.5"></div>
+      <div class="field"><label>Права рука (см)</label><input type="number" id="edit-rarm" step="0.5"></div>
+      <div class="field"><label>Ліва рука (см)</label><input type="number" id="edit-larm" step="0.5"></div>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label>Нотатка</label><textarea id="edit-note"></textarea>
+    </div>
+    <div class="field" style="margin-bottom:14px">
+      <label>💬 Коментар тренера (побачить підопічна)</label>
+      <textarea id="edit-comment" placeholder="Відмінний результат! Продовжуй в тому ж темпі..."></textarea>
+    </div>
+    <button class="btn-save" onclick="saveEdit()" style="width:100%"><i class="ti ti-check"></i> Зберегти зміни</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const SB_URL='https://oegeoljfltowylcuyomc.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lZ2VvbGpmbHRvd3lsY3V5b21jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NjAyMzUsImV4cCI6MjA5NDEzNjIzNX0.6F1cQO9tEWvHhQGOmDtmECG2gZfMv8s8QW00YBBj-Mw';
+const FIELDS=['weight','chest','waist','belly','hips','rleg','lleg','rarm','larm'];
+const LABELS={weight:'Вага',chest:'Груди',waist:'Талія',belly:'Живіт',hips:'Бедра',rleg:'П.нога',lleg:'Л.нога',rarm:'П.рука',larm:'Л.рука'};
+const UNITS={weight:'кг',chest:'см',waist:'см',belly:'см',hips:'см',rleg:'см',lleg:'см',rarm:'см',larm:'см'};
+let allClients={},detailChart=null,currentDetail='';
+
+async function apiGet(path){
+  const r=await fetch(SB_URL+'/rest/v1/'+path,{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  return r.json();
+}
+async function apiWrite(method,path,body){
+  const headers={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json'};
+  if(method==='DELETE')headers['Prefer']='return=representation';
+  const r=await fetch(SB_URL+'/rest/v1/'+path,{method,headers,body:body?JSON.stringify(body):undefined});
+  return r;
+}
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function diffStr(a,b){if(a==null||b==null)return null;return parseFloat((b-a).toFixed(1));}
+function diffBadge(d){if(d===null)return '<span class="diff-zero">—</span>';if(d===0)return '<span class="diff-zero">0</span>';return `<span class="${d<0?'diff-good':'diff-bad'}">${d>0?'+':''}${d}</span>`;}
+
+function isOverdue(entries){
+  if(!entries||!entries.length)return false;
+  const last=entries[entries.length-1];
+  if(!last.date)return false;
+  const lastDate=new Date(last.date);
+  const now=new Date();
+  const diffDays=Math.floor((now-lastDate)/(1000*60*60*24));
+  return diffDays>14;
+}
+
+async function loadClients(){
+  document.getElementById('clients-container').innerHTML='<div class="loading">Завантаження... 🌸</div>';
+  try{
+    const data=await apiGet('measurements?order=client_name.asc,week.asc');
+    allClients={};
+    data.forEach(row=>{if(!allClients[row.client_name])allClients[row.client_name]=[];allClients[row.client_name].push(row);});
+    renderStats();renderClientList(Object.keys(allClients));
+    await loadMotivationEditor();
+  }catch(e){document.getElementById('clients-container').innerHTML='<div class="loading">Помилка 😔</div>';}
+}
+
+async function loadMotivationEditor(){
+  try{
+    const data=await apiGet('trainer_settings?id=eq.1');
+    if(data&&data[0])document.getElementById('motivation-inp').value=data[0].motivation_message||'';
+  }catch(e){}
+}
+
+async function saveMotivation(){
+  const msg=document.getElementById('motivation-inp').value.trim();
+  if(!msg)return;
+  try{
+    await apiWrite('PATCH','trainer_settings?id=eq.1',{motivation_message:msg,updated_at:new Date().toISOString()});
+    toast('Повідомлення збережено! 🌸');
+  }catch(e){toast('Помилка 😔');}
+}
+
+function renderStats(){
+  // статистика прихована, нічого не робимо
+}
+
+function renderClientList(names){
+  const container=document.getElementById('clients-container');
+  if(!names.length){container.innerHTML='<div class="empty">Поки немає підопічних. Надішли їм файл! 🌸</div>';return;}
+  container.innerHTML=`<div class="client-grid">${names.map(name=>{
+    const entries=allClients[name];
+    const first=entries[0],last=entries[entries.length-1];
+    const overdue=isOverdue(entries);
+    const lastDate=last.date?last.date.split('-').reverse().join('.'):'';
+    const wDiff=diffStr(first.weight,last.weight);
+    const waDiff=diffStr(first.waist,last.waist);
+    const diffDays=last.date?Math.floor((new Date()-new Date(last.date))/(1000*60*60*24)):999;
+    const neutralDiff=d=>d===null?'—':(d>0?'+':'')+d;
+    // Рахуємо загальний см по всіх замірах окрім ваги
+    let totalCm=0,cmCount=0;
+    FIELDS.slice(1).forEach(f=>{const d=diffStr(first[f],last[f]);if(d!==null){totalCm+=d;cmCount++;}});
+    const totalCmStr=cmCount?( (totalCm>0?'+':'')+parseFloat(totalCm.toFixed(1))+' см' ):'—';
+    const totalKgStr=wDiff!==null?(wDiff>0?'+':'')+wDiff+' кг':'—';
+    return `<div class="client-card${overdue?' overdue':''}" onclick="showDetail('${name.replace(/'/g,"\\'")}')">
+      <div class="client-name">${name}</div>
+      <div class="client-meta">
+        <i class="ti ti-calendar" style="font-size:11px"></i> ${lastDate}
+        <span class="badge-weeks">${entries.length} тиж.</span>
+        ${overdue?`<span class="badge-weeks badge-overdue"><i class="ti ti-clock" style="font-size:10px"></i> ${diffDays}д без заміру</span>`:''}
+      </div>
+      <div class="client-stats">
+        <div class="stat-mini"><div class="stat-mini-lbl">Вага зараз</div>
+          <div class="stat-mini-val">${last.weight?last.weight+' кг':'—'}</div>
+          <div class="stat-mini-diff" style="color:#2C2C2A;font-size:11px">${totalKgStr} від старту</div></div>
+        <div class="stat-mini"><div class="stat-mini-lbl">Заміри</div>
+          <div class="stat-mini-val">${last.waist?last.waist+' см':'—'}</div>
+          <div class="stat-mini-diff" style="color:#2C2C2A;font-size:11px">${totalCmStr} від старту</div></div>
+      </div>
+      <div onclick="event.stopPropagation()">
+        <button class="card-del-btn" onclick="deleteClient('${name.replace(/'/g,"\\'")}')"><i class="ti ti-trash" style="font-size:11px"></i> Видалити</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function filterClients(){
+  const q=document.getElementById('search-inp').value.toLowerCase();
+  renderClientList(Object.keys(allClients).filter(n=>n.toLowerCase().includes(q)));
+}
+
+function showList(){
+  document.getElementById('view-list').classList.add('on');
+  document.getElementById('view-detail').classList.remove('on');
+  if(detailChart){detailChart.destroy();detailChart=null;}
+  currentDetail='';
+}
+
+function showDetail(name){
+  const entries=allClients[name];if(!entries||!entries.length)return;
+  currentDetail=name;
+  document.getElementById('view-list').classList.remove('on');
+  document.getElementById('view-detail').classList.add('on');
+  renderDetail(name,entries);
+}
+
+function renderDetail(name,entries){
+  const first=entries[0],last=entries[entries.length-1];
+  const gs=last.goals_weight_start,gt=last.goals_weight_target;
+  let goalsHtml='';
+  if(gs&&gt){
+    const cur=last.weight||gs,total=Math.abs(gt-gs),done=Math.abs(cur-gs);
+    const pct=total>0?Math.min(100,Math.round(done/total*100)):0;
+    const remain=parseFloat((cur-gt).toFixed(1));
+    const rs=remain<=0?'ціль досягнуто! 🌸':`залишилось ${Math.abs(remain)} кг`;
+    goalsHtml=`<div class="goal-block"><div class="goal-label">Ціль по вазі</div>
+      <div class="goal-bar-wrap"><div class="goal-bar" style="width:${pct}%"></div></div>
+      <div class="goal-vals"><span class="goal-from">${gs} кг</span>
+      <i class="ti ti-arrow-right" style="font-size:13px;color:#ED93B1"></i>
+      <span class="goal-to">${gt} кг</span><span class="goal-tag">${rs}</span></div></div>`;
+  }
+  const healthHtml=last.health_goals?`<div class="card"><div class="card-head"><i class="ti ti-heart"></i> Цілі здоров'я</div>
+    <div class="health-text">${last.health_goals}</div></div>`:'';
+  const summaryHtml=FIELDS.map(f=>{
+    const d=entries.length>1?diffStr(first[f],last[f]):null;
+    const val=d!==null?(d>0?'+':'')+d+' '+UNITS[f]:'—';
+    return `<div class="sum-card"><div class="sum-lbl">${LABELS[f]}</div><div class="sum-val" style="color:#2C2C2A">${val}</div></div>`;
+  }).join('');
+  const historyHtml=entries.slice().reverse().map(e=>{
+    const mHtml=FIELDS.map(f=>{
+      const d=e.week===first.week?null:diffStr(first[f],e[f]);
+      return `<div class="metric-cell"><div class="metric-name">${LABELS[f]}</div>
+        <div class="metric-val">${e[f]!=null?e[f]+' '+UNITS[f]:'—'}</div>
+        <div class="metric-diff">${e.week===first.week?'<span class="diff-zero">старт</span>':diffBadge(d)}</div></div>`;
+    }).join('');
+    const commentHtml=e.trainer_comment?`<div class="trainer-comment-box">
+      <div class="trainer-comment-lbl"><i class="ti ti-message-circle" style="font-size:11px"></i> Твій коментар</div>
+      <div class="trainer-comment-val">${e.trainer_comment}</div></div>`:'';
+    return `<div class="week-row">
+      <div class="week-row-head">
+        <span class="week-num"><i class="ti ti-calendar" style="font-size:11px"></i> Тиждень ${e.week}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="week-date">${e.date?e.date.split('-').reverse().join('.'):''}</span>
+          <button class="btn-edit no-print" onclick="openEdit('${name.replace(/'/g,"\\'")}',${e.week})"><i class="ti ti-pencil" style="font-size:11px"></i> Змінити</button>
+        </div>
+      </div>
+      <div class="metrics-grid">${mHtml}</div>
+      ${e.note?`<div style="margin-top:8px;font-size:12px;color:#72243E;background:#FDF4F8;border-radius:6px;padding:5px 9px">${e.note}</div>`:''}
+      ${commentHtml}
+    </div>`;
+  }).join('');
+
+  // Рахуємо загальний результат для заголовку
+  const totalKgDiff = entries.length > 1 ? diffStr(first.weight, last.weight) : null;
+  let totalCmSum = 0, cmCnt = 0;
+  if (entries.length > 1) {
+    FIELDS.slice(1).forEach(f => { const d = diffStr(first[f], last[f]); if(d!==null){totalCmSum+=d;cmCnt++;} });
+  }
+  const kgBadge = totalKgDiff !== null
+    ? `<span style="background:#FBEAF0;border:0.5px solid #F4C0D1;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;color:#2C2C2A">${totalKgDiff>0?'+':''}${totalKgDiff} кг</span>`
+    : '';
+  const cmBadge = cmCnt
+    ? `<span style="background:#FBEAF0;border:0.5px solid #F4C0D1;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:600;color:#2C2C2A">${totalCmSum>0?'+':''}${parseFloat(totalCmSum.toFixed(1))} см</span>`
+    : '';
+
+  document.getElementById('detail-content').innerHTML=`
+    <div class="print-header"><h2 style="font-family:Playfair Display,serif;color:#993556">🌸 ${name}</h2>
+      <p style="color:#D4537E;font-size:13px">${entries.length} тижнів · роздруковано ${new Date().toLocaleDateString('uk-UA')}</p></div>
+    <div class="detail-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div class="detail-name">🌸 ${name}</div>
+          <div class="detail-sub">${entries.length} тижнів · останній замір: ${last.date?last.date.split('-').reverse().join('.'):'—'}</div>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+            ${kgBadge}${cmBadge}
+          </div>
+        </div>
+        <div class="detail-actions no-print">
+          <button class="btn-action" onclick="exportPDF('${name.replace(/'/g,"\\'")}')"><i class="ti ti-file-text"></i> Експорт PDF</button>
+          <button class="btn-action btn-danger" onclick="deleteClient('${name.replace(/'/g,"\\'")}')"><i class="ti ti-trash"></i> Видалити</button>
+        </div>
+      </div>
+    </div>
+    ${goalsHtml}${healthHtml}
+    <div class="card"><div class="card-head"><i class="ti ti-chart-bar"></i> Загальний результат</div>
+      <div class="summary-grid">${summaryHtml}</div></div>
+    <div class="chart-wrap"><canvas id="detail-chart" height="160"></canvas></div>
+    <p class="sec-title">Заміри по тижнях</p>
+    ${historyHtml}`;
+
+  setTimeout(()=>{
+    const canvas=document.getElementById('detail-chart');if(!canvas)return;
+    const wd=entries.filter(e=>e.weight!=null);
+    if(wd.length>=2){
+      if(detailChart)detailChart.destroy();
+      detailChart=new Chart(canvas,{type:'line',data:{labels:wd.map(e=>'Тиж '+e.week),
+        datasets:[{data:wd.map(e=>e.weight),borderColor:'#D4537E',backgroundColor:'rgba(212,83,126,0.12)',tension:0.4,fill:true,pointBackgroundColor:'#D4537E',pointRadius:5}]},
+        options:{responsive:true,plugins:{legend:{display:false}},
+        scales:{y:{grid:{color:'rgba(212,83,126,0.1)'},ticks:{font:{family:'Nunito',size:11},color:'#D4537E'}},
+        x:{grid:{display:false},ticks:{font:{family:'Nunito',size:11},color:'#D4537E'}}}}});
+    }else{canvas.style.display='none';}
+  },100);
+}
+
+function exportPDF(name){
+  window.print();
+}
+
+async function deleteClient(name){
+  if(!confirm(`Видалити всі дані "${name}"? Це незворотньо!`))return;
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/measurements?client_name=eq.'+encodeURIComponent(name),{
+      method:'DELETE',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'}
+    });
+    if(!r.ok && r.status!==204)throw new Error('Status: '+r.status);
+    showList();await loadClients();toast('Підопічну видалено 🌸');
+  }catch(e){toast('Помилка видалення: '+e.message);}
+}
+
+function openEdit(clientName,week){
+  const entries=allClients[clientName];if(!entries)return;
+  const e=entries.find(x=>x.week===week);if(!e)return;
+  document.getElementById('edit-client').value=clientName;
+  document.getElementById('edit-week').value=week;
+  FIELDS.forEach(f=>{const el=document.getElementById('edit-'+f);if(el)el.value=e[f]!=null?e[f]:'';});
+  document.getElementById('edit-note').value=e.note||'';
+  document.getElementById('edit-comment').value=e.trainer_comment||'';
+  document.getElementById('edit-modal').classList.add('on');
+}
+function closeEdit(){document.getElementById('edit-modal').classList.remove('on');}
+async function saveEdit(){
+  const clientName=document.getElementById('edit-client').value;
+  const week=parseInt(document.getElementById('edit-week').value);
+  const n=id=>parseFloat(document.getElementById(id).value)||null;
+  const update={note:document.getElementById('edit-note').value,trainer_comment:document.getElementById('edit-comment').value};
+  FIELDS.forEach(f=>update[f]=n('edit-'+f));
+  try{
+    const r=await apiWrite('PATCH',`measurements?client_name=eq.${encodeURIComponent(clientName)}&week=eq.${week}`,update);
+    if(!r.ok)throw new Error();
+    closeEdit();await loadClients();showDetail(clientName);toast('Замір оновлено! 🌸');
+  }catch(e){toast('Помилка збереження 😔');}
+}
+
+loadClients();
+</script>
+</body>
+</html>
